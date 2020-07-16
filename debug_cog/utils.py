@@ -18,11 +18,6 @@ async def copy_context(ctx, author=None, channel=None, content=None):
 
     new_ctx = await ctx.bot.get_context(message=new_message)
 
-    if channel:
-        new_ctx.channel = channel
-    if author:
-        new_ctx.author = author
-
     return new_ctx
 
 def python_codeblock(arg):
