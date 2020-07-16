@@ -1,12 +1,14 @@
 import discord
 from discord.ext import commands
 
-import sys, traceback
+import sys, os
+import traceback
 import importlib
 import ast
 import datetime, humanize
 import shlex, subprocess
 import asyncio
+import inspect
 
 from . import utils
 import debug_cog
@@ -102,8 +104,9 @@ class Debug(commands.Cog):
 
     @debug_command.command(name="shell", description="Runs a command in the system shell", aliases=["sh", "terminal", "cmd"])
     async def debug_shell(self, ctx, *, command: utils.python_codeblock):
-        interface = utils.ShellInterface()
+        interface = utils.Interface()
         await interface.start(ctx)
+        await interface.set_language("bash")
         await interface.add_data(f"$ {command}\n")
 
         command = shlex.split(command)
@@ -123,8 +126,9 @@ class Debug(commands.Cog):
     @debug_command.command(name="toggle", description="Disable/enable a command")
     async def debug_disable(self, ctx, command):
         command = self.bot.get_command(command)
+
         if not command:
-            await ctx.send("❌ Command not found")
+            await ctx.send(f"❌ Command not foudn")
         
         if not hasattr(command, "disabled") or not command.disabled:
             #Create a disabed check that automaticly returns False
@@ -140,6 +144,42 @@ class Debug(commands.Cog):
         else:
             command.remove_check(command.disabled_check)
             await ctx.send(f"✅ Enabled {command.name}")
+    
+    @debug_command.command(name="source", description="Get source code for a command")
+    async def debug_source(self, ctx, *, command):
+        command = self.bot.get_command(command)
+        if not command:
+            return await ctx.send("❌ Command not found")
+
+        try:
+            lines = inspect.getsourcelines(command.callback)[0]
+        except Exception as e:
+            return await ctx.send(f"❌ Error when getting souce lines: {e}")
+
+        source = "".join(lines).split("\n")
+
+        interface = utils.Interface()
+        await interface.start(ctx)
+        await interface.set_language("py")
+
+        for line in source:
+            await interface.add_data(line + "\n")
+
+    @debug_command.command(name="file", description="Display a file")
+    async def debug_file(Self, ctx, path):
+        if not os.path.exists(path):
+            return await ctx.send("❌ File not found")
+        
+        with open(path, "r") as f:
+            interface = utils.Interface()
+            await interface.start(ctx)
+            await interface.set_language("py")
+            await interface.add_data(str(f.read()))
+
+    @debug_command.command(name="lines", description="Get the number of lines in .py files and number of .py files in the current directory")
+    async def debug_lines(self, ctx):
+        code = utils.get_lines_of_code()
+        await ctx.send(f"Files: {code['files']}" + "\n" + f"Lines: {code['lines']}")
 
     @debug_command.command(name="in", description="Run a command in a different channel")
     async def debug_in(self, ctx, channel: discord.TextChannel, *, command):
@@ -147,7 +187,7 @@ class Debug(commands.Cog):
         new_ctx = await utils.copy_context(ctx=ctx, channel=channel, command=command)
 
         if not new_ctx.command:
-            return await ctx.send(f"❌ Command not found")
+            return await ctx.send("❌ Command not found")
 
         await new_ctx.command.invoke(new_ctx)
 
@@ -157,8 +197,18 @@ class Debug(commands.Cog):
         new_ctx = await utils.copy_context(ctx=ctx, author=user, command=command)
 
         if not new_ctx.command:
-            return await ctx.send(f"❌ Command not found")
+            return await ctx.send("❌ Command not found")
+
         await new_ctx.command.invoke(new_ctx)
+
+    @debug_command.command(name="pass", description="Run a command and pass all checks")
+    async def debug_pass(self, ctx, command):
+        new_ctx = await utils.copy_context(ctx=ctx, command=command)
+
+        if not new_ctx.command:
+            return await ctx.send(f"❌ Command not found")
+
+        await new_ctx.command.reinvoke(new_ctx)
         
     @debug_command.command(name="logout", description="Logs out the bot")
     async def logout(self, ctx):

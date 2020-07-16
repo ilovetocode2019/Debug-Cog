@@ -5,6 +5,9 @@ import subprocess
 import asyncio, async_timeout
 import functools
 import inspect
+import os
+import pathlib
+import codecs
 
 async def copy_context(ctx, author=None, channel=None, command=None):
     new_message = copy.copy(ctx.message)
@@ -74,6 +77,26 @@ def python_codeblock(arg):
     
     return code
 
+def get_lines_of_code(comments=False):
+    """Gets every single line in .py files in the directory and the number or .py files"""
+
+    total_lines = 0
+    file_amount = 0
+    for path, subdirs, files in os.walk("."):
+        if "venv" in subdirs:
+            subdirs.remove("venv")
+        if "env" in subdirs:
+            subdirs.remove("env")
+        if "venv-old" in subdirs:
+            subdirs.remove("venv-old")
+        for name in files:
+            if name.endswith(".py"):
+                file_amount += 1
+                f = open(str(pathlib.PurePath(path, name)), encoding="utf-8")
+                total_lines += len(f.readlines())
+                f.close()
+    return {"lines":total_lines, "files":file_amount}
+
 class Shell:
     """A shell session for the shell command"""
     
@@ -116,7 +139,7 @@ class Shell:
             self.process.terminate()
             self.stdout_loop.cancel()
 
-class ShellInterface(menus.Menu):
+class Interface(menus.Menu):
     async def send_initial_message(self, ctx, channel):
         self.data = ""
         self.pos = 0
@@ -124,7 +147,11 @@ class ShellInterface(menus.Menu):
 
     async def add_data(self, data):
         self.data += data
-        await self.message.edit(content="```bash\n" + self.data[self.pos:self.pos+500] + "```")
+        await self.message.edit(content="```" + self.language + "\n" + self.data[self.pos:self.pos+500] + "```")
+
+    async def set_language(self, language):
+        self.language = language
+        await self.message.edit(content="```" + self.language + "\n" + self.data[self.pos:self.pos+500] + "```")
 
     @menus.button("⬅️")
     async def last_page(self, payload):
@@ -132,7 +159,7 @@ class ShellInterface(menus.Menu):
             return
 
         self.pos -= 500
-        await self.message.edit(content="```bash\n" + self.data[self.pos:self.pos+500] + "```")
+        await self.message.edit(content="```" + self.language + "\n" + self.data[self.pos:self.pos+500] + "```")
 
     @menus.button("➡️")
     async def next_page(self, payload):
@@ -140,4 +167,4 @@ class ShellInterface(menus.Menu):
             return
 
         self.pos += 500
-        await self.message.edit(content="```bash\n" + self.data[self.pos:self.pos+500] + "```")
+        await self.message.edit(content="```" + self.language + "\n" + self.data[self.pos:self.pos+500] + "```")
