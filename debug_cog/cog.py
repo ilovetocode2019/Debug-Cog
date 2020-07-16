@@ -41,7 +41,7 @@ class Debug(commands.Cog):
     @commands.group(invoke_without_command=True)
     async def debug_command(self, ctx):
         py_version = sys.version_info
-        py_version = f"{py_version.major}.{py_version.minor}{py_version.micro}"
+        py_version = f"{py_version.major}.{py_version.minor}.{py_version.micro}"
         message = f"Debug {debug_cog.__version__} was loaded {humanize.naturaltime(self.loaded_time)} on python {py_version}, with discord.py {discord.__version__} (OS is {sys.platform})."
         message += f"\nBot can see {len(self.bot.guilds)} guild(s), {len(list(self.bot.get_all_channels()))} channel(s), and {len(self.bot.users)} user(s), Bot's latency is {round(self.bot.latency*1000, 2)}ms"
         await ctx.send(message)
