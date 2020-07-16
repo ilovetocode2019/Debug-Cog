@@ -6,7 +6,7 @@ A discordpy debug cog
 
 Install from GitHub:
 
-`pip install -u git+https://github.com/ilovetocode2019`
+`pip install git+https://github.com/ilovetocode2019/Debug-Cog`
 
 # Usage
 
