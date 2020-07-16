@@ -1,0 +1,4 @@
+discord.py
+humanize
+git+https://github.com/Rapptz/discord-ext-menus
+async_timeout
