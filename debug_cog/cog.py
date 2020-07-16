@@ -91,7 +91,14 @@ class Debug(commands.Cog):
         if not result:
             await ctx.message.add_reaction("✅")
         else:
-            await ctx.send(result)
+            if isinstance(result, str):
+                await ctx.send(result.replace(self.bot.http.token, "[token hidden]"))
+            elif isinstance(result, discord.Embed):
+                await ctx.send(embed=result)
+            elif isinstance(result, discord.File):
+                await ctx.send(file=result)
+            else:
+                await ctx.send(repr(result))
 
     @debug_command.command(name="shell", description="Runs a command in the system shell", aliases=["sh", "terminal", "cmd"])
     async def debug_shell(self, ctx, *, command: utils.python_codeblock):
