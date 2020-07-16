@@ -145,7 +145,7 @@ class Debug(commands.Cog):
     @debug_command.command(name="in", description="Run a command in a different channel")
     async def debug_in(self, ctx, channel: discord.TextChannel, *, command):
         #Copy context with the new channel and new command content
-        new_ctx = await utils.copy_context(ctx=ctx, channel=channel, content=f"{self.bot.command_prefix}{command}")
+        new_ctx = await utils.copy_context(ctx=ctx, channel=channel, command=command)
 
         if not new_ctx.command:
             return await ctx.send(f"❌ Command not found")
@@ -155,7 +155,7 @@ class Debug(commands.Cog):
     @debug_command.command(name="as", description="Run the command as a different member")
     async def debug_as(self, ctx, user: discord.Member, *, command):
         #Copy context with the new user and new command content
-        new_ctx = await utils.copy_context(ctx=ctx, author=user, content=f"{self.bot.command_prefix}{command}")
+        new_ctx = await utils.copy_context(ctx=ctx, author=user, command=command)
 
         if not new_ctx.command:
             return await ctx.send(f"❌ Command not found")

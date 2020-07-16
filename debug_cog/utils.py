@@ -4,19 +4,28 @@ import copy
 import subprocess
 import asyncio, async_timeout
 import functools
+import inspect
 
-async def copy_context(ctx, author=None, channel=None, content=None):
+async def copy_context(ctx, author=None, channel=None, command=None):
     new_message = copy.copy(ctx.message)
-
-    if content:
-        new_message.content = content
 
     if channel:
         new_message.channel = channel
     if author:
         new_message.author = author
 
+    if command:
+        prefix = ctx.bot.command_prefix
+        if inspect.isfunction(prefix):
+            prefix = prefix(ctx.bot, new_message)
+        if inspect.iscoroutinefunction(prefix):
+            prefix = await prefix(ctx.bot, new_message)
+        if isinstance(prefix, list):
+            prefix = prefix[0]
+        new_message.content = f"{prefix}{command}"
+
     new_ctx = await ctx.bot.get_context(message=new_message)
+
 
     return new_ctx
 
