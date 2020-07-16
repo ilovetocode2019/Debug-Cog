@@ -121,7 +121,7 @@ class Debug(commands.Cog):
             error = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
             await ctx.send(f"⚠️\n```py\n{error}```")
 
-    @debug_command.command(name="toggle", description="Disable/undisable a command")
+    @debug_command.command(name="toggle", description="Disable/enable a command")
     async def debug_disable(self, ctx, command):
         command = self.bot.get_command(command)
         if not command:
