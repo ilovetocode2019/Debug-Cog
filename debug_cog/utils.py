@@ -80,9 +80,13 @@ class Shell:
     def __init__(self, command, loop=None):
         #Create tasks to get stdout
         self.loop = loop or asyncio.get_event_loop()
-        self.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         self.queue = asyncio.Queue()
-        self.stdout_loop = self.loop.create_task(self.get_stdout())
+
+        try:
+            self.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            self.stdout_loop = self.loop.create_task(self.get_stdout())
+        except Exception as e:
+            self.loop.create_task(self.queue.put(f"Error: {e}"))
     
     async def get_stdout(self):
         while True:
@@ -107,9 +111,10 @@ class Shell:
 
     def __exit__(self, *args):
         #When no more stdout
-        self.process.kill()
-        self.process.terminate()
-        self.stdout_loop.cancel()
+        if hasattr(self, "process"):
+            self.process.kill()
+            self.process.terminate()
+            self.stdout_loop.cancel()
 
 class ShellInterface(menus.Menu):
     async def send_initial_message(self, ctx, channel):
@@ -123,12 +128,16 @@ class ShellInterface(menus.Menu):
 
     @menus.button("⬅️")
     async def last_page(self, payload):
-        if self.pos >= 0:
-            self.pos -= 500
+        if self.data[self.pos - 500:self.pos] == "":
+            return
+
+        self.pos -= 500
         await self.message.edit(content="```bash\n" + self.data[self.pos:self.pos+500] + "```")
 
     @menus.button("➡️")
     async def next_page(self, payload):
-        if (len(self.data)-1)+500 >  self.pos+500:
-            self.pos += 500
+        if self.data[self.pos + 500:self.pos + 1000] == "":
+            return
+
+        self.pos += 500
         await self.message.edit(content="```bash\n" + self.data[self.pos:self.pos+500] + "```")

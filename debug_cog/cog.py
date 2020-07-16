@@ -102,11 +102,10 @@ class Debug(commands.Cog):
 
     @debug_command.command(name="shell", description="Runs a command in the system shell", aliases=["sh", "terminal", "cmd"])
     async def debug_shell(self, ctx, *, command: utils.python_codeblock):
-        msg = f"$ {command}"
-        
         interface = utils.ShellInterface()
         await interface.start(ctx)
-        
+        await interface.add_data(f"$ {command}\n")
+
         command = shlex.split(command)
         with utils.Shell(command, self.bot.loop) as reader:
             async for x in reader:
