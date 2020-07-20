@@ -202,7 +202,7 @@ class Debug(commands.Cog):
         await new_ctx.command.invoke(new_ctx)
 
     @debug_command.command(name="pass", description="Run a command and pass all checks")
-    async def debug_pass(self, ctx, command):
+    async def debug_pass(self, ctx, *, command):
         new_ctx = await utils.copy_context(ctx=ctx, command=command)
 
         if not new_ctx.command:
