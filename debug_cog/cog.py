@@ -128,7 +128,8 @@ class Debug(commands.Cog):
         command = self.bot.get_command(command)
 
         if not command:
-            await ctx.send(f"❌ Command not foudn")
+            await ctx.send(f"❌ Command not found")
+            return
         
         if not hasattr(command, "disabled") or not command.disabled:
             #Create a disabed check that automaticly returns False
