@@ -1,6 +1,6 @@
 # Debug-Cog
 
-A discordpy debug cog
+A discord.py debug cog
 
 ## Setup
 
