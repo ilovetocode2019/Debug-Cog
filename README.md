@@ -2,13 +2,13 @@
 
 A discordpy debug cog
 
-# Setup
+## Setup
 
 Install from GitHub:
 
 `pip install git+https://github.com/ilovetocode2019/Debug-Cog`
 
-# Usage
+## Usage
 
 ```python
 from discord.ext import commands
