@@ -1,6 +1,6 @@
 # Debug-Cog
 
-A discord.py debug cog
+A discord.py debug cog. This project is no longer being maintained.
 
 ## Setup
 
